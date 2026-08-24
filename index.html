@@ -1,0 +1,441 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// ENUMS
+// =============================================
+
+enum Role {
+  OWNER
+  ADMIN
+  MODERATOR
+  CREATOR
+  USER
+}
+
+enum VideoVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum VideoStatus {
+  DRAFT
+  PROCESSING
+  READY
+  FAILED
+  HIDDEN
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  REJECTED
+}
+
+enum ReportTargetType {
+  VIDEO
+  COMMENT
+  USER
+  CHANNEL
+}
+
+enum NotificationType {
+  VIDEO
+  COMMENT
+  REPLY
+  LIKE
+  SUBSCRIPTION
+  SYSTEM
+}
+
+// =============================================
+// USER
+// =============================================
+
+model User {
+  id              String   @id @default(cuid())
+
+  email           String   @unique
+  passwordHash    String?
+  username        String   @unique
+  displayName     String
+
+  bio             String?
+  avatarUrl       String?
+
+  googleId        String?  @unique
+
+  emailVerified   Boolean  @default(false)
+  isBanned        Boolean  @default(false)
+
+  role            Role     @default(USER)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // العلاقات
+  channels        Channel[]
+  comments        Comment[]
+  likes           Like[]
+  subscriptions   Subscription[] @relation("Subscriber")
+  notifications   Notification[]
+  refreshTokens   RefreshToken[]
+  reports         Report[] @relation("Reporter")
+  watchHistory    WatchHistory[]
+
+  @@index([username])
+  @@index([email])
+}
+
+// =============================================
+// CHANNEL
+// =============================================
+
+model Channel {
+  id                String   @id @default(cuid())
+
+  name              String
+  handle            String   @unique
+
+  description       String?
+  avatarUrl         String?
+  bannerUrl         String?
+
+  socialLinks       Json?
+
+  subscriberCount   Int      @default(0)
+  viewCount         BigInt   @default(0)
+
+  isVerified        Boolean  @default(false)
+  isDisabled        Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // المالك
+  ownerId           String
+  owner             User     @relation(
+    fields: [ownerId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  videos            Video[]
+  subscribers       Subscription[]
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+// =============================================
+// VIDEO
+// =============================================
+
+model Video {
+  id                String          @id @default(cuid())
+
+  title             String
+  description       String?
+
+  thumbnailUrl      String?
+
+  duration          Int?
+
+  visibility        VideoVisibility @default(PUBLIC)
+  status            VideoStatus     @default(DRAFT)
+
+  viewCount         BigInt          @default(0)
+  likeCount         Int             @default(0)
+  commentCount      Int             @default(0)
+
+  category          String?
+  tags              String[]        @default([])
+
+  // ملفات الفيديو
+  originalPath      String?
+  hlsPath           String?
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  publishedAt       DateTime?
+
+  channelId         String
+  channel           Channel         @relation(
+    fields: [channelId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  comments          Comment[]
+  likes             Like[]
+  watchHistory      WatchHistory[]
+
+  @@index([channelId])
+  @@index([createdAt])
+  @@index([publishedAt])
+  @@index([visibility, status])
+}
+
+// =============================================
+// COMMENT
+// =============================================
+
+model Comment {
+  id                String   @id @default(cuid())
+
+  content           String
+
+  isEdited          Boolean  @default(false)
+  isDeleted         Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userId            String
+  user              User     @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  videoId           String
+  video             Video    @relation(
+    fields: [videoId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  // الردود
+  parentId          String?
+  parent            Comment? @relation(
+    "CommentReplies",
+    fields: [parentId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  replies           Comment[] @relation("CommentReplies")
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+}
+
+// =============================================
+// LIKE
+// =============================================
+
+model Like {
+  id                String   @id @default(cuid())
+
+  createdAt         DateTime @default(now())
+
+  userId            String
+  user              User     @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  videoId           String
+  video             Video    @relation(
+    fields: [videoId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  // يمنع الإعجاب مرتين
+  @@unique([userId, videoId])
+
+  @@index([videoId])
+}
+
+// =============================================
+// SUBSCRIPTION
+// =============================================
+
+model Subscription {
+  id                String   @id @default(cuid())
+
+  createdAt         DateTime @default(now())
+
+  subscriberId      String
+  subscriber        User     @relation(
+    "Subscriber",
+    fields: [subscriberId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  channelId         String
+  channel           Channel  @relation(
+    fields: [channelId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  // يمنع الاشتراك المكرر
+  @@unique([subscriberId, channelId])
+
+  @@index([channelId])
+  @@index([subscriberId])
+}
+
+// =============================================
+// WATCH HISTORY
+// =============================================
+
+model WatchHistory {
+  id                String   @id @default(cuid())
+
+  watchedAt         DateTime @default(now())
+
+  progress          Int      @default(0)
+
+  userId            String
+  user              User     @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  videoId           String
+  video             Video    @relation(
+    fields: [videoId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  // فيديو واحد لكل مستخدم في السجل
+  @@unique([userId, videoId])
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([watchedAt])
+}
+
+// =============================================
+// NOTIFICATION
+// =============================================
+
+model Notification {
+  id                String           @id @default(cuid())
+
+  type              NotificationType
+
+  title             String
+  message           String?
+
+  isRead            Boolean          @default(false)
+
+  data              Json?
+
+  createdAt         DateTime          @default(now())
+
+  userId            String
+  user              User              @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// =============================================
+// REFRESH TOKEN
+// =============================================
+
+model RefreshToken {
+  id                String   @id @default(cuid())
+
+  token             String   @unique
+
+  expiresAt         DateTime
+
+  createdAt         DateTime @default(now())
+
+  userId            String
+  user              User     @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// =============================================
+// PLATFORM SETTINGS
+// =============================================
+
+model PlatformSetting {
+  id                String   @id @default(cuid())
+
+  key               String   @unique
+  value             Json
+
+  updatedAt         DateTime @updatedAt
+}
+
+// =============================================
+// REPORT
+// =============================================
+
+model Report {
+  id                String           @id @default(cuid())
+
+  reason            String
+  description       String?
+
+  status            ReportStatus     @default(PENDING)
+
+  targetType        ReportTargetType
+  targetId          String
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  reporterId        String
+  reporter          User             @relation(
+    "Reporter",
+    fields: [reporterId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([reporterId])
+  @@index([targetType, targetId])
+  @@index([status])
+}
+
+// =============================================
+// PASSWORD RESET
+// =============================================
+
+model PasswordResetToken {
+  id                String   @id @default(cuid())
+
+  token             String   @unique
+
+  expiresAt         DateTime
+
+  createdAt         DateTime @default(now())
+
+  userId            String
+
+  @@index([userId])
+  @@index([token])
+}
