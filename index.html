@@ -1,162 +1,804 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fryzen — منصّة الفيديو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0D10;
+    --surface:#14171B;
+    --surface2:#1C2026;
+    --surface3:#22262C;
+    --border:#262B33;
+    --text:#ECEDEE;
+    --muted:#8B92A0;
+    --amber:#F2B705;
+    --amber-dim:#8a6a08;
+    --teal:#1FB6A6;
+    --danger:#E8546A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Cairo',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,.brand,.btn,.tab,.chip{font-family:'Tajawal',sans-serif;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:8px;}
 
-  <title>Fryzen Platform</title>
+  /* sprocket strip — signature motif */
+  .sprocket{
+    height:8px;
+    background-image: radial-gradient(circle, var(--bg) 2.4px, transparent 2.6px);
+    background-size: 18px 8px;
+    background-position: 9px 0;
+    background-color: var(--amber);
+  }
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  header{
+    position:sticky; top:0; z-index:40;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+  }
+  .headerbar{
+    height:64px; display:flex; align-items:center; gap:18px;
+    padding:0 22px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-size:22px; font-weight:900; white-space:nowrap;}
+  .brand .mark{
+    width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(135deg,var(--amber),#c98f04);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 1px rgba(242,183,5,.25);
+  }
+  .brand .mark svg{width:16px;height:16px;}
+  .brand span{color:var(--amber);}
+  .searchwrap{flex:1; display:flex; justify-content:center;}
+  .searchbox{
+    width:100%; max-width:560px; display:flex;
+    border:1px solid var(--border); border-radius:999px; overflow:hidden;
+    background:var(--surface2);
+  }
+  .searchbox input{
+    flex:1; background:transparent; border:none; outline:none; color:var(--text);
+    padding:10px 16px; font-size:14px; font-family:'Cairo',sans-serif;
+  }
+  .searchbox button{
+    background:var(--surface3); border:none; color:var(--muted); padding:0 16px;
+  }
+  .headeractions{display:flex; align-items:center; gap:10px;}
+  .btn{
+    border:none; border-radius:999px; padding:9px 16px; font-weight:700; font-size:14px;
+    display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+  }
+  .btn-amber{background:var(--amber); color:#171300;}
+  .btn-amber:hover{background:#ffca1f;}
+  .btn-outline{background:transparent; border:1px solid var(--border); color:var(--text);}
+  .btn-outline:hover{border-color:var(--amber);}
+  .btn-ghost{background:var(--surface2); color:var(--text);}
+  .btn-danger{background:transparent; color:var(--danger); border:1px solid rgba(232,84,106,.4);}
+  .btn-sm{padding:6px 12px; font-size:13px;}
+  .avatar{
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-weight:800; color:#0b0d10; flex-shrink:0; user-select:none;
+  }
 
-    body {
-      margin: 0;
-      background: #0f0f0f;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
+  .layout{display:flex; align-items:flex-start;}
+  .sidebar{
+    width:230px; flex-shrink:0; padding:18px 12px; position:sticky; top:73px;
+    height:calc(100vh - 73px); overflow-y:auto;
+  }
+  .sidebar a.navitem, .sidebar button.navitem{
+    display:flex; align-items:center; gap:12px; width:100%; text-align:right;
+    padding:10px 14px; border-radius:10px; background:transparent; border:none;
+    color:var(--text); font-size:14.5px; font-weight:600; margin-bottom:2px;
+  }
+  .sidebar .navitem:hover{background:var(--surface2);}
+  .sidebar .navitem.active{background:var(--surface2); color:var(--amber);}
+  .sidebar .navitem svg{width:19px;height:19px; flex-shrink:0;}
+  .sidebar .divider{height:1px; background:var(--border); margin:14px 6px;}
+  .sidebar .label{color:var(--muted); font-size:12px; padding:6px 14px; font-weight:700;}
+  .subchip{display:flex;align-items:center;gap:10px;padding:7px 14px;border-radius:10px;}
+  .subchip:hover{background:var(--surface2);}
+  .subchip .avatar{width:24px;height:24px;font-size:11px;}
 
-    header {
-      height: 65px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 30px;
-      border-bottom: 1px solid #282828;
-      background: #181818;
-    }
+  main{flex:1; min-width:0; padding:22px 26px 60px;}
 
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-    }
+  .chiprow{display:flex; gap:10px; overflow-x:auto; padding-bottom:16px; margin-bottom:6px;}
+  .chip{
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:7px 16px; border-radius:10px; font-size:13.5px; font-weight:600; flex-shrink:0;
+  }
+  .chip.active{background:var(--text); color:#0b0d10; border-color:var(--text);}
 
-    .logo span {
-      color: #ff0000;
-    }
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:22px 16px;
+  }
+  .card{cursor:pointer;}
+  .thumbwrap{
+    position:relative; border-radius:var(--radius); overflow:hidden; background:var(--surface2);
+    aspect-ratio:16/9; margin-bottom:10px;
+  }
+  .thumbwrap img{width:100%;height:100%;object-fit:cover; display:block;}
+  .duration{
+    position:absolute; bottom:6px; left:6px; background:rgba(0,0,0,.8);
+    color:#fff; font-size:11.5px; padding:2px 6px; border-radius:5px; font-weight:700;
+  }
+  .cardmeta{display:flex; gap:10px;}
+  .cardmeta .avatar{width:36px;height:36px;font-size:14px; margin-top:2px;}
+  .cardtitle{font-weight:700; font-size:14.5px; line-height:1.35; margin:0 0 4px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .cardsub{color:var(--muted); font-size:12.5px; line-height:1.6;}
 
-    button {
-      background: #ff0000;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-    }
+  .empty{
+    text-align:center; padding:70px 20px; color:var(--muted);
+  }
+  .empty .big{font-size:44px; margin-bottom:10px;}
+  .empty h3{color:var(--text); margin:0 0 6px;}
 
-    main {
-      max-width: 1200px;
-      margin: auto;
-      padding: 30px;
-    }
+  /* watch page */
+  .watchgrid{display:grid; grid-template-columns:1fr 360px; gap:26px; align-items:start;}
+  @media(max-width:980px){.watchgrid{grid-template-columns:1fr;}}
+  .player{
+    width:100%; aspect-ratio:16/9; background:#000; border-radius:var(--radius);
+    overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .player video{width:100%;height:100%;object-fit:contain; background:#000;}
+  .player .fallback{color:var(--muted); text-align:center; padding:20px; font-size:14px;}
+  .watchtitle{font-size:20px; font-weight:800; margin:16px 0 10px;}
+  .watchbar{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:14px;}
+  .chinfo{display:flex; align-items:center; gap:12px;}
+  .chnames b{display:block; font-size:15px;}
+  .chnames span{color:var(--muted); font-size:12.5px;}
+  .actionrow{display:flex; gap:10px;}
+  .pill{
+    display:flex; border:1px solid var(--border); border-radius:999px; overflow:hidden; background:var(--surface2);
+  }
+  .pill button{background:transparent; border:none; color:var(--text); padding:9px 16px; display:flex; align-items:center; gap:7px; font-size:14px; font-weight:600;}
+  .pill button.active{color:var(--amber);}
+  .pill .sep{width:1px; background:var(--border);}
+  .desc{
+    background:var(--surface2); border-radius:var(--radius); padding:14px 16px; font-size:13.5px;
+    line-height:1.8; color:var(--text); margin-bottom:22px; white-space:pre-wrap;
+  }
+  .desc .stat{color:var(--muted); font-weight:700; margin-left:10px;}
 
-    h1 {
-      font-size: 32px;
-    }
+  .commentbox{display:flex; gap:12px; margin-bottom:20px;}
+  .commentbox textarea{
+    flex:1; background:transparent; border:none; border-bottom:1px solid var(--border);
+    color:var(--text); font-family:'Cairo',sans-serif; font-size:14px; resize:none; padding:8px 0; outline:none;
+  }
+  .commentbox textarea:focus{border-color:var(--amber);}
+  .comment{display:flex; gap:12px; margin-bottom:18px;}
+  .comment .avatar{width:34px;height:34px;font-size:13px;flex-shrink:0;}
+  .comment b{font-size:13.5px;}
+  .comment .ctext{font-size:13.5px; line-height:1.6; margin-top:3px;}
+  .comment .cmeta{color:var(--muted); font-size:11.5px; margin-top:6px; display:flex; gap:12px; align-items:center;}
 
-    .upload {
-      margin: 25px 0;
-      padding: 25px;
-      background: #181818;
-      border-radius: 15px;
-    }
+  .side-item{display:flex; gap:10px; margin-bottom:12px; cursor:pointer;}
+  .side-item .thumb{width:150px; aspect-ratio:16/9; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--surface2);}
+  .side-item .thumb img{width:100%;height:100%;object-fit:cover;}
+  .side-item .stitle{font-size:13px; font-weight:700; line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .side-item .ssub{color:var(--muted); font-size:11.5px; margin-top:4px;}
 
-    input[type="file"] {
-      margin-top: 15px;
-    }
+  /* channel page */
+  .banner{height:150px; border-radius:var(--radius); margin-bottom:-40px; position:relative; overflow:hidden;}
+  .chheader{display:flex; align-items:flex-end; gap:18px; padding:0 8px; margin-bottom:20px;}
+  .chheader .avatar{width:96px;height:96px;font-size:32px; border:4px solid var(--bg);}
+  .chheader h2{margin:0 0 4px; font-size:24px;}
+  .chheader .chandle{color:var(--muted); font-size:13px;}
+  .chstats{color:var(--muted); font-size:13px; margin-top:4px;}
+  .chtabs{display:flex; gap:26px; border-bottom:1px solid var(--border); margin-bottom:22px;}
+  .chtabs button{background:none; border:none; color:var(--muted); padding:12px 2px; font-weight:700; font-size:14.5px; border-bottom:2px solid transparent;}
+  .chtabs button.active{color:var(--text); border-color:var(--amber);}
 
-    #videoContainer {
-      margin-top: 30px;
-    }
+  /* modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(5,6,8,.72); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    width:100%; max-width:480px; max-height:88vh; overflow-y:auto; padding:22px;
+  }
+  .modal h3{margin:0 0 18px; font-size:19px; display:flex; align-items:center; justify-content:space-between;}
+  .modal h3 button{background:none; border:none; color:var(--muted); font-size:20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px; font-weight:700;}
+  .field input[type=text], .field textarea, .field select{
+    width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; color:var(--text); font-family:'Cairo',sans-serif; font-size:14px; outline:none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{border-color:var(--amber);}
+  .field textarea{resize:vertical; min-height:70px;}
+  .swatches{display:flex; gap:8px; flex-wrap:wrap;}
+  .swatch{width:30px;height:30px;border-radius:8px; cursor:pointer; border:2px solid transparent;}
+  .swatch.sel{border-color:var(--text);}
+  .filedrop{
+    border:1.5px dashed var(--border); border-radius:12px; padding:22px; text-align:center;
+    color:var(--muted); font-size:13.5px; cursor:pointer; background:var(--surface2);
+  }
+  .filedrop.has{border-style:solid; border-color:var(--amber); color:var(--text);}
+  .modalfoot{display:flex; gap:10px; margin-top:18px;}
+  .modalfoot .btn{flex:1; justify-content:center;}
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+    background:var(--surface3); border:1px solid var(--amber); color:var(--text);
+    padding:12px 22px; border-radius:12px; font-size:13.5px; font-weight:700; z-index:200;
+    opacity:0; pointer-events:none; transition:opacity .25s, bottom .25s;
+  }
+  .toast.show{opacity:1; bottom:36px;}
 
-    video {
-      width: 100%;
-      max-width: 800px;
-      border-radius: 15px;
-      background: black;
-    }
-
-    .info {
-      margin-top: 15px;
-      color: #aaa;
-    }
-  </style>
+  @media(max-width:760px){
+    .sidebar{display:none;}
+    .searchwrap{display:none;}
+    main{padding:16px;}
+  }
+</style>
 </head>
-
 <body>
 
 <header>
-  <div class="logo">
-    ▶ <span>Fryzen</span> Platform
+  <div class="headerbar">
+    <a href="#/home" class="brand">
+      <span class="mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L22 8 V16 L12 22 L2 16 V8 Z" stroke="#171300" stroke-width="1.6"/><path d="M10 9 L16 12 L10 15 Z" fill="#171300"/></svg>
+      </span>
+      Fry<span>zen</span>
+    </a>
+    <div class="searchwrap">
+      <div class="searchbox">
+        <input id="searchInput" type="text" placeholder="ابحث عن فيديوهات أو قنوات…">
+        <button onclick="app.doSearch()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="headeractions">
+      <button class="btn btn-outline" onclick="app.openUpload()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        رفع فيديو
+      </button>
+      <button class="btn btn-amber" id="channelBtn" onclick="app.channelBtnClick()">إنشاء قناة</button>
+    </div>
   </div>
-
-  <button onclick="createChannel()">
-    إنشاء قناة
-  </button>
+  <div class="sprocket"></div>
 </header>
 
-<main>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main id="main"></main>
+</div>
 
-  <h1>مرحبًا بك في Fryzen Platform</h1>
-
-  <div class="upload">
-    <h2>رفع فيديو تجريبي</h2>
-
-    <input
-      type="file"
-      id="videoInput"
-      accept="video/*"
-    >
-
-    <br><br>
-
-    <button onclick="uploadVideo()">
-      رفع الفيديو
-    </button>
-  </div>
-
-  <div id="videoContainer"></div>
-
-</main>
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
 
 <script>
+/* ============ DATA HELPERS ============ */
+const COLORS = ['#F2B705','#1FB6A6','#E8546A','#7C8CF8','#F28705','#33C481','#C77DFF','#4CC9F0'];
+const CATEGORIES = ['الكل','تعليم','ألعاب','موسيقى','طبخ','تقنية','رياضة','سفر','فلوق'];
+const uid = (p='id') => p + '_' + Math.random().toString(36).slice(2,10);
+const nowISO = () => new Date().toISOString();
 
-function createChannel() {
-  alert("تم إنشاء قناة تجريبية!");
+function fmtCount(n){
+  n = Number(n)||0;
+  if(n < 1000) return String(n);
+  if(n < 1000000) return (n/1000).toFixed(n%1000===0?0:1).replace(/\.0$/,'') + ' ألف';
+  return (n/1000000).toFixed(n%1000000===0?0:1).replace(/\.0$/,'') + ' مليون';
+}
+function timeAgo(iso){
+  const s = Math.floor((Date.now() - new Date(iso).getTime())/1000);
+  const u = [['سنة',31536000],['شهر',2592000],['أسبوع',604800],['يوم',86400],['ساعة',3600],['دقيقة',60]];
+  for(const [label,secs] of u){
+    const v = Math.floor(s/secs);
+    if(v>=1) return 'منذ ' + v + ' ' + label;
+  }
+  return 'الآن';
+}
+function fmtDuration(sec){
+  sec = Math.floor(sec||0);
+  const m = Math.floor(sec/60), s = sec%60;
+  return m + ':' + String(s).padStart(2,'0');
+}
+function svgThumb(seed, color){
+  const id = 'g'+Math.random().toString(36).slice(2,8);
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="480" height="270">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="#14171B"/>
+    </linearGradient></defs>
+    <rect width="480" height="270" fill="url(#${id})"/>
+    <circle cx="240" cy="135" r="34" fill="rgba(11,13,16,.55)"/>
+    <path d="M228 118 L262 135 L228 152 Z" fill="white"/>
+  </svg>`);
+}
+function avatarStyle(color){ return `background:${color}`; }
+function initials(name){ return (name||'?').trim().slice(0,1); }
+
+/* ============ STATE ============ */
+const state = {
+  route: '#/home',
+  channels: {},     // id -> channel
+  videos: {},       // id -> video
+  myChannelId: null,
+  subs: new Set(),      // channel ids the viewer follows
+  likes: new Set(),     // video ids liked
+  searchQuery: '',
+  activeCategory: 'الكل',
+};
+
+function seed(){
+  const mk = (name, handle, color, desc) => {
+    const id = uid('ch');
+    state.channels[id] = {id,name,handle,color,desc,subscribers:0,createdAt:nowISO(),videos:[]};
+    return id;
+  };
+  const c1 = mk('نور - Nour Tech','@nour.tech','#1FB6A6','قناة تقنية تشرح أدوات البرمجة والذكاء الاصطناعي بطريقة مبسطة.');
+  const c2 = mk('مطبخ ياسمين','@yasmine.kitchen','#E8546A','وصفات جزائرية وعالمية سهلة وسريعة كل أسبوع.');
+  const c3 = mk('رحّالة','@rahhala','#7C8CF8','فلوقات سفر حول العالم والصحراء الجزائرية.');
+  state.channels[c1].subscribers = 128400;
+  state.channels[c2].subscribers = 54200;
+  state.channels[c3].subscribers = 9800;
+
+  const mkVid = (chId, title, desc, cat, dur, views) => {
+    const id = uid('v');
+    const ch = state.channels[chId];
+    const v = {id, channelId:chId, title, description:desc, category:cat,
+      duration:dur, views, likes:Math.floor(views*0.04), comments:[],
+      thumb: svgThumb(id, ch.color), src:null, isSeed:true, createdAt:nowISO()};
+    state.videos[id] = v; ch.videos.push(id);
+    v.comments.push({id:uid('c'), name:'مشاهد', text:'محتوى رائع، استمر!', createdAt:nowISO()});
+    return id;
+  };
+  mkVid(c1,'شرح Prisma من الصفر لمشروع فيديو مثل يوتيوب','في هذا الفيديو نبني سكيمة قاعدة بيانات كاملة لمنصة فيديوهات.','تقنية',742,182300);
+  mkVid(c1,'أفضل 5 أخطاء يقع فيها المبرمجون المبتدئون','','تقنية',511,64200);
+  mkVid(c2,'كسكسي جزائري تقليدي خطوة بخطوة','وصفة جدتي بالتفصيل مع كل الأسرار.','طبخ',630,301500);
+  mkVid(c2,'حلويات العيد في 10 دقائق','','طبخ',600,98700);
+  mkVid(c3,'رحلة إلى الصحراء الكبرى - غرداية وتيميمون','مغامرة لمدة 5 أيام في قلب الصحراء الجزائرية.','سفر',900,45200);
+}
+seed();
+
+/* ============ TOAST ============ */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-function uploadVideo() {
+/* ============ ROUTER ============ */
+window.addEventListener('hashchange', render);
+window.addEventListener('DOMContentLoaded', ()=>{ if(!location.hash) location.hash='#/home'; render(); });
 
-  const input = document.getElementById("videoInput");
-  const container = document.getElementById("videoContainer");
+function parseRoute(){
+  const h = (location.hash || '#/home').replace('#/','');
+  const parts = h.split('/');
+  return {name: parts[0]||'home', arg: parts[1]||null};
+}
 
-  if (!input.files.length) {
-    alert("اختر فيديو أولاً");
-    return;
-  }
+function render(){
+  renderSidebar();
+  renderHeaderBtn();
+  const {name, arg} = parseRoute();
+  const main = document.getElementById('main');
+  if(name==='home') main.innerHTML = pageHome();
+  else if(name==='watch') main.innerHTML = pageWatch(arg);
+  else if(name==='channel') main.innerHTML = pageChannel(arg, 'videos');
+  else if(name==='search') main.innerHTML = pageSearch();
+  else if(name==='subs') main.innerHTML = pageSubscriptions();
+  else main.innerHTML = pageHome();
+  window.scrollTo(0,0);
+}
 
-  const file = input.files[0];
-
-  const videoURL = URL.createObjectURL(file);
-
-  container.innerHTML = `
-    <h2>${file.name}</h2>
-
-    <video controls>
-      <source src="${videoURL}" type="${file.type}">
-      متصفحك لا يدعم الفيديو.
-    </video>
-
-    <div class="info">
-      فيديو تجريبي على Fryzen Platform
-    </div>
+/* ============ SIDEBAR ============ */
+function renderSidebar(){
+  const {name} = parseRoute();
+  const subbedChannels = [...state.subs].map(id=>state.channels[id]).filter(Boolean);
+  document.getElementById('sidebar').innerHTML = `
+    <a class="navitem ${name==='home'?'active':''}" href="#/home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+      الرئيسية
+    </a>
+    <a class="navitem ${name==='subs'?'active':''}" href="#/subs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 9l6 3-6 3z" fill="currentColor" stroke="none"/></svg>
+      الاشتراكات
+    </a>
+    ${state.myChannelId ? `
+    <a class="navitem ${name==='channel' && parseRoute().arg===state.myChannelId?'active':''}" href="#/channel/${state.myChannelId}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+      قناتي
+    </a>` : ''}
+    <div class="divider"></div>
+    <div class="label">مشتركٌ فيها</div>
+    ${subbedChannels.length ? subbedChannels.map(c=>`
+      <a class="subchip" href="#/channel/${c.id}">
+        <span class="avatar" style="${avatarStyle(c.color)};width:24px;height:24px;font-size:11px;">${initials(c.name)}</span>
+        <span style="font-size:13px;">${esc(c.name)}</span>
+      </a>`).join('') : `<div style="padding:4px 14px;color:var(--muted);font-size:12.5px;">لا اشتراكات بعد</div>`}
   `;
 }
 
-</script>
+function renderHeaderBtn(){
+  const btn = document.getElementById('channelBtn');
+  if(state.myChannelId){
+    const ch = state.channels[state.myChannelId];
+    btn.innerHTML = `<span class="avatar" style="${avatarStyle(ch.color)};width:26px;height:26px;font-size:12px;">${initials(ch.name)}</span>&nbsp;قناتي`;
+    btn.className = 'btn btn-ghost';
+  } else {
+    btn.textContent = 'إنشاء قناة';
+    btn.className = 'btn btn-amber';
+  }
+}
 
+/* ============ VIDEO CARD ============ */
+function videoCard(v){
+  const ch = state.channels[v.channelId];
+  return `
+  <div class="card" onclick="location.hash='#/watch/${v.id}'">
+    <div class="thumbwrap">
+      <img src="${v.thumb}">
+      <span class="duration">${fmtDuration(v.duration)}</span>
+    </div>
+    <div class="cardmeta">
+      <span class="avatar" style="${avatarStyle(ch.color)};width:36px;height:36px;font-size:14px;">${initials(ch.name)}</span>
+      <div>
+        <p class="cardtitle">${esc(v.title)}</p>
+        <div class="cardsub">${esc(ch.name)}</div>
+        <div class="cardsub">${fmtCount(v.views)} مشاهدة · ${timeAgo(v.createdAt)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============ PAGES ============ */
+function pageHome(){
+  let vids = Object.values(state.videos).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+  if(state.activeCategory !== 'الكل') vids = vids.filter(v=>v.category===state.activeCategory);
+  return `
+    <div class="chiprow">
+      ${CATEGORIES.map(c=>`<button class="chip ${state.activeCategory===c?'active':''}" onclick="app.setCategory('${c}')">${c}</button>`).join('')}
+    </div>
+    ${vids.length ? `<div class="grid">${vids.map(videoCard).join('')}</div>` : emptyState('🎬','لا توجد فيديوهات في هذا التصنيف بعد')}
+  `;
+}
+
+function pageSearch(){
+  const q = state.searchQuery.trim().toLowerCase();
+  const vids = Object.values(state.videos).filter(v=>{
+    const ch = state.channels[v.channelId];
+    return v.title.toLowerCase().includes(q) || ch.name.toLowerCase().includes(q) || (v.description||'').toLowerCase().includes(q);
+  });
+  return `
+    <h2 style="margin-top:4px;">نتائج البحث عن «${esc(state.searchQuery)}»</h2>
+    ${vids.length ? `<div class="grid">${vids.map(videoCard).join('')}</div>` : emptyState('🔍','لم يتم العثور على نتائج')}
+  `;
+}
+
+function pageSubscriptions(){
+  const vids = Object.values(state.videos).filter(v=>state.subs.has(v.channelId))
+    .sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+  return `
+    <h2 style="margin-top:4px;">الاشتراكات</h2>
+    ${vids.length ? `<div class="grid">${vids.map(videoCard).join('')}` + `</div>` : emptyState('📭','اشترك في قنوات لترى فيديوهاتها هنا')}
+  `;
+}
+
+function pageWatch(id){
+  const v = state.videos[id];
+  if(!v) return emptyState('❓','هذا الفيديو غير موجود');
+  const ch = state.channels[v.channelId];
+  const liked = state.likes.has(v.id);
+  const subbed = state.subs.has(ch.id);
+  const isMine = state.myChannelId === ch.id;
+  const related = Object.values(state.videos).filter(x=>x.id!==v.id)
+    .sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
+
+  return `
+  <div class="watchgrid">
+    <div>
+      <div class="player">
+        ${v.src ? `<video src="${v.src}" controls autoplay poster="${v.thumb}"></video>`
+                : `<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.35;">
+                   <div class="fallback" style="position:relative;">🎞️ هذا فيديو تجريبي (بيانات توضيحية) — لا يحتوي على ملف فعلي للتشغيل.<br>ارفع فيديو حقيقي من زر «رفع فيديو» لتشغيله هنا.</div>`}
+      </div>
+
+      <div class="watchtitle">${esc(v.title)}</div>
+      <div class="watchbar">
+        <a href="#/channel/${ch.id}" class="chinfo">
+          <span class="avatar" style="${avatarStyle(ch.color)};width:44px;height:44px;font-size:16px;">${initials(ch.name)}</span>
+          <div class="chnames">
+            <b>${esc(ch.name)}</b>
+            <span>${fmtCount(ch.subscribers)} مشترك</span>
+          </div>
+        </a>
+        <div class="actionrow">
+          ${!isMine ? `<button class="btn ${subbed?'btn-ghost':'btn-amber'} btn-sm" onclick="app.toggleSub('${ch.id}')">${subbed?'مُشترَك ✓':'اشتراك'}</button>` : `<span class="chip">هذه قناتك</span>`}
+          <div class="pill">
+            <button class="${liked?'active':''}" onclick="app.toggleLike('${v.id}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-1 8H4v11h13a3 3 0 0 0 3-3l1-8a2 2 0 0 0-2-2h-5z"/></svg>
+              ${fmtCount(v.likes)}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="desc">
+        <span class="stat">${fmtCount(v.views)} مشاهدة</span><span class="stat">${timeAgo(v.createdAt)}</span><span class="stat">${v.category||''}</span>
+        ${v.description ? '<br><br>'+esc(v.description) : ''}
+      </div>
+
+      <h3 style="font-size:15px;margin-bottom:14px;">${v.comments.length} تعليق</h3>
+      <div class="commentbox">
+        <span class="avatar" style="background:var(--surface3);width:34px;height:34px;font-size:13px;">أ</span>
+        <textarea id="commentInput" rows="1" placeholder="أضف تعليقًا…" onkeydown="app.commentKey(event,'${v.id}')"></textarea>
+      </div>
+      <div id="commentsList">${renderComments(v)}</div>
+    </div>
+
+    <div>
+      ${related.map(r=>{
+        const rc = state.channels[r.channelId];
+        return `<div class="side-item" onclick="location.hash='#/watch/${r.id}'">
+          <div class="thumb"><img src="${r.thumb}"></div>
+          <div>
+            <div class="stitle">${esc(r.title)}</div>
+            <div class="ssub">${esc(rc.name)}</div>
+            <div class="ssub">${fmtCount(r.views)} مشاهدة · ${timeAgo(r.createdAt)}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderComments(v){
+  if(!v.comments.length) return `<div style="color:var(--muted);font-size:13.5px;">لا توجد تعليقات بعد. كن أول من يعلّق!</div>`;
+  return v.comments.slice().reverse().map(c=>`
+    <div class="comment">
+      <span class="avatar" style="background:var(--surface3);">${initials(c.name)}</span>
+      <div>
+        <b>${esc(c.name)}</b>
+        <div class="ctext">${esc(c.text)}</div>
+        <div class="cmeta">
+          <span>${timeAgo(c.createdAt)}</span>
+          <span style="cursor:pointer;" onclick="app.deleteComment('${v.id}','${c.id}')">حذف</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function pageChannel(id, tab){
+  const ch = state.channels[id];
+  if(!ch) return emptyState('❓','هذه القناة غير موجودة');
+  const vids = ch.videos.map(vid=>state.videos[vid]).filter(Boolean).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+  const subbed = state.subs.has(ch.id);
+  const isMine = state.myChannelId === ch.id;
+  return `
+    <div class="banner" style="background:linear-gradient(120deg, ${ch.color}, #14171B);"></div>
+    <div class="chheader">
+      <span class="avatar" style="${avatarStyle(ch.color)};" class="avatar">${initials(ch.name)}</span>
+      <div style="flex:1;">
+        <h2>${esc(ch.name)}</h2>
+        <div class="chandle">${esc(ch.handle)} · ${vids.length} فيديو</div>
+        <div class="chstats">${fmtCount(ch.subscribers)} مشترك</div>
+      </div>
+      ${!isMine ? `<button class="btn ${subbed?'btn-ghost':'btn-amber'}" onclick="app.toggleSub('${ch.id}')">${subbed?'مُشترَك ✓':'اشتراك'}</button>`
+                : `<button class="btn btn-outline" onclick="app.openUpload()">+ فيديو جديد</button>`}
+    </div>
+    ${ch.desc ? `<p style="color:var(--muted);font-size:13.5px;max-width:640px;margin:-6px 0 20px;">${esc(ch.desc)}</p>` : ''}
+    <div class="chtabs">
+      <button class="active">الفيديوهات</button>
+    </div>
+    ${vids.length ? `<div class="grid">${vids.map(videoCard).join('')}</div>` : emptyState('📹', isMine ? 'لم ترفع أي فيديو بعد' : 'لا توجد فيديوهات في هذه القناة بعد')}
+  `;
+}
+
+function emptyState(icon, text){
+  return `<div class="empty"><div class="big">${icon}</div><h3>${esc(text)}</h3></div>`;
+}
+
+function esc(s){
+  return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============ APP ACTIONS ============ */
+const app = {
+
+  setCategory(c){ state.activeCategory = c; render(); },
+
+  doSearch(){
+    const q = document.getElementById('searchInput').value;
+    state.searchQuery = q;
+    location.hash = '#/search';
+    render();
+  },
+
+  channelBtnClick(){
+    if(state.myChannelId) location.hash = '#/channel/' + state.myChannelId;
+    else this.openCreateChannel();
+  },
+
+  toggleSub(chId){
+    if(state.subs.has(chId)){
+      state.subs.delete(chId);
+      state.channels[chId].subscribers = Math.max(0, state.channels[chId].subscribers - 1);
+      toast('تم إلغاء الاشتراك');
+    } else {
+      state.subs.add(chId);
+      state.channels[chId].subscribers += 1;
+      toast('تم الاشتراك ✓');
+    }
+    render();
+  },
+
+  toggleLike(vId){
+    const v = state.videos[vId];
+    if(state.likes.has(vId)){ state.likes.delete(vId); v.likes = Math.max(0, v.likes - 1); }
+    else { state.likes.add(vId); v.likes += 1; toast('أعجبك هذا الفيديو 👍'); }
+    render();
+  },
+
+  commentKey(ev, vId){
+    if(ev.key === 'Enter' && !ev.shiftKey){
+      ev.preventDefault();
+      const el = document.getElementById('commentInput');
+      const text = el.value.trim();
+      if(!text) return;
+      state.videos[vId].comments.push({id:uid('c'), name: state.myChannelId ? state.channels[state.myChannelId].name : 'أنت', text, createdAt: nowISO()});
+      el.value = '';
+      document.getElementById('commentsList').innerHTML = renderComments(state.videos[vId]);
+    }
+  },
+
+  deleteComment(vId, cId){
+    const v = state.videos[vId];
+    v.comments = v.comments.filter(c=>c.id!==cId);
+    document.getElementById('commentsList').innerHTML = renderComments(v);
+  },
+
+  /* ---- create channel modal ---- */
+  openCreateChannel(){
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="overlay" onclick="if(event.target===this) app.closeModal()">
+      <div class="modal">
+        <h3>إنشاء قناتك <button onclick="app.closeModal()">×</button></h3>
+        <div class="field"><label>اسم القناة</label><input type="text" id="chName" placeholder="مثال: قناة أحمد"></div>
+        <div class="field"><label>المعرّف (handle)</label><input type="text" id="chHandle" placeholder="مثال: @ahmed"></div>
+        <div class="field"><label>وصف القناة (اختياري)</label><textarea id="chDesc" placeholder="عن ماذا تتحدث قناتك؟"></textarea></div>
+        <div class="field"><label>لون القناة</label>
+          <div class="swatches" id="chSwatches">
+            ${COLORS.map((c,i)=>`<div class="swatch ${i===0?'sel':''}" style="background:${c}" data-color="${c}" onclick="app.pickSwatch(this)"></div>`).join('')}
+          </div>
+        </div>
+        <div class="modalfoot">
+          <button class="btn btn-ghost" onclick="app.closeModal()">إلغاء</button>
+          <button class="btn btn-amber" onclick="app.submitCreateChannel()">إنشاء القناة</button>
+        </div>
+      </div>
+    </div>`;
+  },
+  pickSwatch(el){
+    document.querySelectorAll('#chSwatches .swatch').forEach(s=>s.classList.remove('sel'));
+    el.classList.add('sel');
+  },
+  submitCreateChannel(){
+    const name = document.getElementById('chName').value.trim();
+    let handle = document.getElementById('chHandle').value.trim();
+    const desc = document.getElementById('chDesc').value.trim();
+    const color = document.querySelector('#chSwatches .swatch.sel')?.dataset.color || COLORS[0];
+    if(!name){ toast('أدخل اسم القناة أولاً'); return; }
+    if(!handle) handle = '@' + name.replace(/\s+/g,'').toLowerCase();
+    if(!handle.startsWith('@')) handle = '@' + handle;
+    const id = uid('ch');
+    state.channels[id] = {id, name, handle, color, desc, subscribers:0, createdAt: nowISO(), videos:[]};
+    state.myChannelId = id;
+    this.closeModal();
+    toast('تم إنشاء قناتك بنجاح 🎉');
+    location.hash = '#/channel/' + id;
+    render();
+  },
+
+  /* ---- upload video modal ---- */
+  openUpload(){
+    if(!state.myChannelId){
+      toast('أنشئ قناة أولاً قبل رفع فيديو');
+      this.openCreateChannel();
+      return;
+    }
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="overlay" onclick="if(event.target===this) app.closeModal()">
+      <div class="modal">
+        <h3>رفع فيديو جديد <button onclick="app.closeModal()">×</button></h3>
+        <div class="field">
+          <label>ملف الفيديو</label>
+          <div class="filedrop" id="dropZone" onclick="document.getElementById('vidFile').click()">
+            📁 اضغط لاختيار ملف فيديو من جهازك
+          </div>
+          <input type="file" id="vidFile" accept="video/*" style="display:none" onchange="app.onFilePicked(this)">
+        </div>
+        <div class="field"><label>عنوان الفيديو</label><input type="text" id="vTitle" placeholder="اكتب عنوانًا جذابًا…"></div>
+        <div class="field"><label>الوصف (اختياري)</label><textarea id="vDesc" placeholder="عن ماذا يتحدث الفيديو؟"></textarea></div>
+        <div class="field"><label>التصنيف</label>
+          <select id="vCat">${CATEGORIES.filter(c=>c!=='الكل').map(c=>`<option>${c}</option>`).join('')}</select>
+        </div>
+        <div class="modalfoot">
+          <button class="btn btn-ghost" onclick="app.closeModal()">إلغاء</button>
+          <button class="btn btn-amber" onclick="app.submitUpload()">نشر الفيديو</button>
+        </div>
+      </div>
+    </div>`;
+    this._pickedFile = null;
+    this._pickedThumb = null;
+    this._pickedDuration = 0;
+  },
+
+  onFilePicked(input){
+    const file = input.files[0];
+    if(!file) return;
+    this._pickedFile = file;
+    document.getElementById('dropZone').textContent = '✅ ' + file.name;
+    document.getElementById('dropZone').classList.add('has');
+
+    // capture a frame as thumbnail + read duration
+    const url = URL.createObjectURL(file);
+    const vidEl = document.createElement('video');
+    vidEl.src = url; vidEl.muted = true; vidEl.crossOrigin = 'anonymous';
+    vidEl.addEventListener('loadeddata', ()=>{
+      this._pickedDuration = vidEl.duration || 0;
+      try{ vidEl.currentTime = Math.min(1, (vidEl.duration||1)/2); }catch(e){}
+    });
+    vidEl.addEventListener('seeked', ()=>{
+      try{
+        const canvas = document.createElement('canvas');
+        canvas.width = 480; canvas.height = 270;
+        canvas.getContext('2d').drawImage(vidEl, 0,0,480,270);
+        this._pickedThumb = canvas.toDataURL('image/jpeg', 0.75);
+      }catch(e){}
+    });
+    this._pickedUrl = url;
+  },
+
+  submitUpload(){
+    const title = document.getElementById('vTitle').value.trim();
+    const description = document.getElementById('vDesc').value.trim();
+    const category = document.getElementById('vCat').value;
+    if(!this._pickedFile){ toast('اختر ملف فيديو أولاً'); return; }
+    if(!title){ toast('أدخل عنوان الفيديو'); return; }
+    const chId = state.myChannelId;
+    const id = uid('v');
+    const v = {
+      id, channelId: chId, title, description, category,
+      duration: this._pickedDuration || 0,
+      views: 0, likes: 0, comments: [],
+      thumb: this._pickedThumb || svgThumb(id, state.channels[chId].color),
+      src: this._pickedUrl, isSeed:false, createdAt: nowISO()
+    };
+    state.videos[id] = v;
+    state.channels[chId].videos.push(id);
+    this.closeModal();
+    toast('تم نشر الفيديو بنجاح 🚀');
+    location.hash = '#/watch/' + id;
+    render();
+    setTimeout(()=>{ v.views += 1; if(location.hash==='#/watch/'+id) render(); }, 400);
+  },
+
+  closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+};
+
+document.getElementById('searchInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') app.doSearch();
+});
+</script>
 </body>
 </html>
